@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SIAL TIRO</title>
+<title>SIAL TIRO - 1ra Persona</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
 body{background:#0a1628;color:white;padding:10px;padding-bottom:30px}
 .top{text-align:center}
-.top h1{font-size:28px;letter-spacing:1px}
+.top h1{font-size:28px}
 .sub{color:#ffb703;font-size:13px;margin:4px 0 10px}
 .card{background:#13233f;border:1px solid #2a3f66;border-radius:16px;padding:12px;margin-bottom:10px}
 select{width:100%;padding:12px;border-radius:10px;border:0;background:white;color:#111;font-size:15px;font-weight:700}
@@ -16,29 +16,28 @@ select{width:100%;padding:12px;border-radius:10px;border:0;background:white;colo
 .marcador div{flex:1;background:#0a1628;border-radius:12px;padding:10px 4px}
 .marcador b{font-size:24px;display:block}
 .marcador span{font-size:11px;color:#a8bcdd}
-#cancha{width:100%;height:430px;background:#f4a259;background:linear-gradient(#e07a2f,#c65d1a);border-radius:14px;display:block;border:3px solid white}
-.controls label{font-size:13px;font-weight:700;display:flex;justify-content:space-between;margin:12px 0 4px}
+#cancha{width:100%;height:480px;background:#111;display:block;border-radius:14px;border:3px solid white}
+label{font-size:13px;font-weight:700;display:flex;justify-content:space-between;margin:12px 0 4px}
 input[type=range]{width:100%;height:28px;accent-color:#ff6b00}
 .btn{width:100%;padding:16px;border:0;border-radius:14px;font-size:22px;font-weight:900;cursor:pointer}
 .btn-tirar{background:#ff6b00;color:white;margin-top:12px}
 .btn-reset{background:#2a3f66;color:white;margin-top:8px;font-size:15px;padding:12px}
 #msg{text-align:center;font-weight:900;font-size:19px;min-height:28px;margin-top:10px}
 #detalle{text-align:center;color:#d6e2ff;font-size:13px;min-height:20px}
-.pill{display:inline-block;background:#ff6b00;padding:4px 10px;border-radius:20px;font-size:12px}
 </style>
 </head>
 <body>
-<div class="top"><h1>🏀 SIAL TIRO</h1><div class="sub">JORNADA 7 • LIGA NIKE • TEMPORADA I_26</div></div>
+<div class="top"><h1>🏀 SIAL TIRO</h1><div class="sub">VISTA 1RA PERSONA • DESDE TUS HOMBROS • JORNADA 7 LIGA NIKE</div></div>
 
 <div class="card">
 <select id="juego">
-<option>20 Nov 17:00 • 7B • ACAD REDBULLS MIX DIEGO vs COL TEPEYAC</option>
-<option>20 Nov 18:00 • 7E • ACAD REDBULLS JERRY vs ACAD LYCANS TOÑO</option>
-<option selected>21 Nov 10:00 • 12G • KADEMY MIKE vs COL BOSQUES FALCONS</option>
-<option>21 Nov 11:00 • 1C • KADEMY MIKE vs ACAD BEARS CHARLY</option>
-<option>21 Nov 10:00 • 5G • COL ENCINO KEVIN vs SEC MARISTA PACHECO</option>
-<option>21 Nov 11:00 • 17F • COL ENTORNO MIKE vs SEC MARISTA INV</option>
-<option>21 Nov 12:00 • 9E • SEC MARISTA PACHECO vs COL ENCINO PACO</option>
+<option>20 Nov 17:00 • 7B • REDBULLS DIEGO vs TEPEYAC</option>
+<option>20 Nov 18:00 • 7E • REDBULLS JERRY vs LYCANS TOÑO</option>
+<option selected>21 Nov 10:00 • 12G • KADEMY MIKE vs BOSQUES FALCONS</option>
+<option>21 Nov 11:00 • 1C • KADEMY MIKE vs BEARS CHARLY</option>
+<option>21 Nov 10:00 • 5G • ENCINO KEVIN vs MARISTA PACHECO</option>
+<option>21 Nov 11:00 • 17F • ENTORNO MIKE vs MARISTA INV</option>
+<option>21 Nov 12:00 • 9E • MARISTA PACHECO vs ENCINO PACO</option>
 </select>
 <div class="marcador">
 <div><b id="enc">0</b><span>ENCESTES</span></div>
@@ -48,9 +47,9 @@ input[type=range]{width:100%;height:28px;accent-color:#ff6b00}
 </div>
 
 <div class="card" style="padding:8px">
-<canvas id="cancha" width="360" height="430"></canvas>
-<div id="msg">¡Listo para tirar!</div>
-<div id="detalle">Ajusta ángulo y fuerza y pica ¡TIRAR!</div>
+<canvas id="cancha" width="360" height="480"></canvas>
+<div id="msg">¡Tú tienes el balón! 🏀</div>
+<div id="detalle">Mira el aro, ajusta ángulo y tira.</div>
 </div>
 
 <div class="card">
@@ -65,81 +64,104 @@ input[type=range]{width:100%;height:28px;accent-color:#ff6b00}
 <script>
 const cv=document.getElementById('cancha'), ctx=cv.getContext('2d');
 let enc=0, tir=0, anim=null;
-let balon={x:70,y:360,r:18};
-let trayectoria=[];
+let balon={x:180,y:390,escala:1,visible:true};
+let vuelo=null;
 
-function dibujar(anguloDib){
- ctx.clearRect(0,0,360,430);
- // cancha
- ctx.fillStyle='#e07a2f'; ctx.fillRect(0,0,360,430);
- ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=3;
- ctx.beginPath(); ctx.arc(180,430,110,Math.PI,0); ctx.stroke();
- ctx.beginPath(); ctx.moveTo(20,430); ctx.lineTo(20,300); ctx.lineTo(340,300); ctx.lineTo(340,430); ctx.stroke();
- ctx.fillStyle='rgba(255,255,255,.15)'; ctx.fillRect(20,300,320,130);
- // tablero
- ctx.fillStyle='white'; ctx.fillRect(200,55,110,78);
- ctx.strokeStyle='#0a1628'; ctx.lineWidth=3; ctx.strokeRect(200,55,110,78);
- ctx.fillStyle='#ff6b00'; ctx.fillRect(235,98,40,28);
+function dibujar(){
+ ctx.clearRect(0,0,360,480);
+ // cielo / gradas
+ ctx.fillStyle='#0a1628'; ctx.fillRect(0,0,360,180);
+ ctx.fillStyle='#1a2f55'; ctx.fillRect(0,140,360,60);
+ ctx.fillStyle='#ffb703'; ctx.font='bold 13px Arial'; ctx.fillText('SIAL • LIGA NIKE • JORNADA 7', 78, 165);
+ // cancha en perspectiva - desde tus ojos
+ ctx.fillStyle='#d97a26'; ctx.beginPath(); ctx.moveTo(0,480); ctx.lineTo(110,190); ctx.lineTo(250,190); ctx.lineTo(360,480); ctx.closePath(); ctx.fill();
+ ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2.5;
+ ctx.beginPath(); ctx.moveTo(0,480); ctx.lineTo(110,190); ctx.moveTo(360,480); ctx.lineTo(250,190); ctx.stroke();
+ // líneas
+ ctx.beginPath(); ctx.moveTo(95,330); ctx.lineTo(265,330); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(135,260); ctx.lineTo(225,260); ctx.stroke();
+ // TABLERO Y ARO ENFRENTE - GRANDE
+ ctx.fillStyle='white'; ctx.fillRect(115,55,130,95);
+ ctx.strokeStyle='#111'; ctx.lineWidth=3; ctx.strokeRect(115,55,130,95);
+ ctx.fillStyle='#ff6b00'; ctx.fillRect(162,108,36,28);
+ ctx.fillStyle='white'; ctx.font='bold 11px Arial'; ctx.fillText('SIAL',162,72);
  // aro
  ctx.strokeStyle='#ff2d00'; ctx.lineWidth=5;
- ctx.beginPath(); ctx.ellipse(255,132,28,7,0,0,Math.PI*2); ctx.stroke();
- ctx.strokeStyle='white'; ctx.lineWidth=1.5;
- for(let i=0;i<5;i++){ctx.beginPath(); ctx.moveTo(232+i*11,134); ctx.lineTo(235+i*10,155); ctx.stroke();}
- // línea de tiro
- ctx.strokeStyle='white'; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(70,360); ctx.lineTo(255,132); ctx.stroke(); ctx.setLineDash([]);
- // arco ángulo
- ctx.strokeStyle='yellow'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(70,360,45, -anguloDib*Math.PI/180, 0); ctx.stroke();
- ctx.fillStyle='yellow'; ctx.font='bold 14px Arial'; ctx.fillText(anguloDib+'°', 95, 345);
- // trayectoria punteada previa
- ctx.fillStyle='rgba(255,255,255,.8)';
- trayectoria.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();});
- // balón
- ctx.fillStyle='#ff7a00'; ctx.beginPath(); ctx.arc(balon.x,balon.y,balon.r,0,Math.PI*2); ctx.fill();
- ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.stroke();
- ctx.beginPath(); ctx.moveTo(balon.x-balon.r,balon.y); ctx.lineTo(balon.x+balon.r,balon.y); ctx.moveTo(balon.x,balon.y-balon.r); ctx.lineTo(balon.x,balon.y+balon.r); ctx.stroke();
+ ctx.beginPath(); ctx.ellipse(180,152,32,8,0,0,Math.PI*2); ctx.stroke();
+ ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1.2;
+ for(let i=0;i<6;i++){ctx.beginPath(); ctx.moveTo(155+i*10,155); ctx.lineTo(158+i*9,178); ctx.stroke();}
+ // punto de mira según ángulo
+ let ang=+document.getElementById('angulo').value;
+ ctx.strokeStyle='yellow'; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.moveTo(180,390); ctx.lineTo(180,160); ctx.stroke(); ctx.setLineDash([]);
+ ctx.fillStyle='yellow'; ctx.font='bold 13px Arial'; ctx.fillText('ÁNGULO '+ang+'°', 125, 210);
+
+ // TUS HOMBROS - abajo, primera persona
+ ctx.fillStyle='#ff6b00'; // jersey
+ ctx.beginPath(); ctx.ellipse(45,480,95,55,0,Math.PI,Math.PI*2); ctx.fill();
+ ctx.beginPath(); ctx.ellipse(315,480,95,55,0,Math.PI,Math.PI*2); ctx.fill();
+ ctx.fillStyle='#0a1628'; ctx.font='bold 11px Arial'; ctx.fillText('TÚ', 32, 465); ctx.fillText('TÚ', 302, 465);
+
+ // TUS MANOS Y BALÓN
+ if(balon.visible){
+   let x=balon.x, y=balon.y, r=38*balon.escala;
+   // manos
+   ctx.fillStyle='#f2c094';
+   ctx.beginPath(); ctx.arc(x-28, y+22, 16, 0, Math.PI*2); ctx.fill();
+   ctx.beginPath(); ctx.arc(x+28, y+22, 16, 0, Math.PI*2); ctx.fill();
+   // balón grande porque está en tus manos
+   ctx.fillStyle='#ff7a00'; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+   ctx.strokeStyle='#111'; ctx.lineWidth=2.5; ctx.stroke();
+   ctx.beginPath(); ctx.moveTo(x-r,y); ctx.lineTo(x+r,y); ctx.moveTo(x,y-r); ctx.lineTo(x,y+r); ctx.stroke();
+   ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(x,y,r*0.6,0.4,2.2); ctx.stroke();
+ }
+ // efecto de trayectoria
+ if(vuelo){
+   ctx.fillStyle='rgba(255,255,255,.85)';
+   vuelo.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();});
+ }
 }
 function actualizar(){
  document.getElementById('enc').innerText=enc;
  document.getElementById('tir').innerText=tir;
  document.getElementById('por').innerText= tir? Math.round(enc/tir*100)+'%' : '0%';
 }
-document.getElementById('angulo').oninput=e=>{document.getElementById('angTxt').innerText=e.target.value+'°'; dibujar(+e.target.value);};
+document.getElementById('angulo').oninput=e=>{document.getElementById('angTxt').innerText=e.target.value+'°'; dibujar();};
 document.getElementById('fuerza').oninput=e=>{document.getElementById('fueTxt').innerText=e.target.value+'%';};
 
 function tirar(){
  if(anim) return;
  let ang=+document.getElementById('angulo').value;
  let fue=+document.getElementById('fuerza').value;
- let rad=ang*Math.PI/180;
- let v= 9 + fue*0.09;
- let vx=Math.cos(rad)*v, vy=-Math.sin(rad)*v;
- let x=70, y=360, g=0.35;
- trayectoria=[]; tir++;
- document.getElementById('msg').innerText='¡Vuela el balón... 🏀';
- document.getElementById('detalle').innerText=`Ángulo: ${ang}° • Fuerza: ${fue}% • Velocidad: ${v.toFixed(1)}`;
+ tir++;
+ document.getElementById('msg').innerText='¡El balón va volando... 🏀';
+ document.getElementById('detalle').innerText=`Desde tus hombros • Ángulo ${ang}° • Fuerza ${fue}%`;
+ // animación primera persona: el balón sube y se achica hacia el aro
+ let t=0; vuelo=[];
+ let x0=180, y0=390, x1=180, y1=152;
+ // calcula si encesta: zona ideal 48-60° y 65-80% fuerza
+ let encesta = (ang>=48 && ang<=62 && fue>=62 && fue<=82);
+ // si falla, desvía el destino
+ if(!encesta){ x1 = 180 + (Math.random()<0.5?-1:1)*(35+Math.random()*35); y1 = 145 + Math.random()*25; }
  anim=setInterval(()=>{
-  x+=vx; y+=vy; vy+=g;
-  balon.x=x; balon.y=y;
-  if(trayectoria.length<40 && trayectoria.length%2==0) trayectoria.push({x,y});
-  dibujar(ang);
-  // ¿encestó?
-  if(Math.abs(x-255)<18 && Math.abs(y-132)<10 && vy>0){
-   clearInterval(anim); anim=null; enc++;
-   document.getElementById('msg').innerText='¡ENCAANASTASTE! 🎉🏀';
-   document.getElementById('detalle').innerText=`¡Perfecto! Ángulo ${ang}° • Fuerza ${fue}%`;
-   actualizar(); setTimeout(()=>{balon={x:70,y:360,r:18}; trayectoria=[]; dibujar(ang);},1200);
+  t+=0.045;
+  if(t>=1){ clearInterval(anim); anim=null;
+   if(encesta){ enc++; document.getElementById('msg').innerText='¡ENCAANASTASTE! 🎉 ¡DESDE TUS HOMBROS!'; document.getElementById('detalle').innerText=`¡Perfecto! Ángulo ${ang}° • Fuerza ${fue}% • ¡Aplausos!`; }
+   else { document.getElementById('msg').innerText='Falló... ¡Ajusta ángulo o fuerza! 😅'; document.getElementById('detalle').innerText=`Te pasaste o te faltó. Prueba 52° y 72%`; }
+   actualizar();
+   setTimeout(()=>{ balon={x:180,y:390,escala:1,visible:true}; vuelo=null; dibujar(); },1100);
    return;
   }
-  if(y>400 || x>360 || x<0){
-   clearInterval(anim); anim=null;
-   document.getElementById('msg').innerText='Falló... ¡Intenta de nuevo! 😅';
-   document.getElementById('detalle').innerText=`Cayó en X:${Math.round(x)} • Te faltó / te pasaste. Ajusta fuerza.`;
-   actualizar(); setTimeout(()=>{balon={x:70,y:360,r:18}; trayectoria=[]; dibujar(ang);},900);
-  }
- },28);
+  // parábola: sube y baja
+  let x = x0 + (x1-x0)*t;
+  let y = y0 + (y1-y0)*t - Math.sin(t*Math.PI)*110;
+  let escala = 1 - t*0.65; // se aleja, se ve más chico
+  balon={x, y, escala, visible:true};
+  if(vuelo.length<25) vuelo.push({x,y});
+  dibujar();
+ },30);
 }
-function reiniciar(){enc=0;tir=0;actualizar();document.getElementById('msg').innerText='Marcador en cero. ¡A tirar!';}
-dibujar(52); actualizar();
+function reiniciar(){enc=0;tir=0;actualizar();document.getElementById('msg').innerText='Marcador en cero. ¡Tú tienes el balón!';}
+dibujar(); actualizar();
 </script>
 </body>
 </html>
