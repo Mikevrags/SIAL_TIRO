@@ -1,17 +1,145 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SIAL TIRO</title>
-<style>body{background:#0f172a;color:white;font-family:sans-serif;text-align:center;padding:20px}button{font-size:28px;padding:15px 30px;border-radius:15px;border:none;background:#f97316;color:white}h1{font-size:40px}#canasta{font-size:100px}</style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
+body{background:#0a1628;color:white;padding:10px;padding-bottom:30px}
+.top{text-align:center}
+.top h1{font-size:28px;letter-spacing:1px}
+.sub{color:#ffb703;font-size:13px;margin:4px 0 10px}
+.card{background:#13233f;border:1px solid #2a3f66;border-radius:16px;padding:12px;margin-bottom:10px}
+select{width:100%;padding:12px;border-radius:10px;border:0;background:white;color:#111;font-size:15px;font-weight:700}
+.marcador{display:flex;justify-content:space-between;text-align:center;margin-top:10px}
+.marcador div{flex:1;background:#0a1628;border-radius:12px;padding:10px 4px}
+.marcador b{font-size:24px;display:block}
+.marcador span{font-size:11px;color:#a8bcdd}
+#cancha{width:100%;height:430px;background:#f4a259;background:linear-gradient(#e07a2f,#c65d1a);border-radius:14px;display:block;border:3px solid white}
+.controls label{font-size:13px;font-weight:700;display:flex;justify-content:space-between;margin:12px 0 4px}
+input[type=range]{width:100%;height:28px;accent-color:#ff6b00}
+.btn{width:100%;padding:16px;border:0;border-radius:14px;font-size:22px;font-weight:900;cursor:pointer}
+.btn-tirar{background:#ff6b00;color:white;margin-top:12px}
+.btn-reset{background:#2a3f66;color:white;margin-top:8px;font-size:15px;padding:12px}
+#msg{text-align:center;font-weight:900;font-size:19px;min-height:28px;margin-top:10px}
+#detalle{text-align:center;color:#d6e2ff;font-size:13px;min-height:20px}
+.pill{display:inline-block;background:#ff6b00;padding:4px 10px;border-radius:20px;font-size:12px}
+</style>
 </head>
 <body>
-<h1>🏀 SIAL TIRO</h1>
-<div id="canasta">🏀</div>
-<h2 id="marcador">Encestes: 0 / Tiros: 0</h2>
-<button onclick="tirar()">¡TIRAR!</button>
-<p id="msg">Toca TIRAR para practicar</p>
+<div class="top"><h1>🏀 SIAL TIRO</h1><div class="sub">JORNADA 7 • LIGA NIKE • TEMPORADA I_26</div></div>
+
+<div class="card">
+<select id="juego">
+<option>20 Nov 17:00 • 7B • ACAD REDBULLS MIX DIEGO vs COL TEPEYAC</option>
+<option>20 Nov 18:00 • 7E • ACAD REDBULLS JERRY vs ACAD LYCANS TOÑO</option>
+<option selected>21 Nov 10:00 • 12G • KADEMY MIKE vs COL BOSQUES FALCONS</option>
+<option>21 Nov 11:00 • 1C • KADEMY MIKE vs ACAD BEARS CHARLY</option>
+<option>21 Nov 10:00 • 5G • COL ENCINO KEVIN vs SEC MARISTA PACHECO</option>
+<option>21 Nov 11:00 • 17F • COL ENTORNO MIKE vs SEC MARISTA INV</option>
+<option>21 Nov 12:00 • 9E • SEC MARISTA PACHECO vs COL ENCINO PACO</option>
+</select>
+<div class="marcador">
+<div><b id="enc">0</b><span>ENCESTES</span></div>
+<div><b id="tir">0</b><span>TIROS</span></div>
+<div><b id="por">0%</b><span>EFECTIVIDAD</span></div>
+</div>
+</div>
+
+<div class="card" style="padding:8px">
+<canvas id="cancha" width="360" height="430"></canvas>
+<div id="msg">¡Listo para tirar!</div>
+<div id="detalle">Ajusta ángulo y fuerza y pica ¡TIRAR!</div>
+</div>
+
+<div class="card">
+<label><span>📐 ÁNGULO DE TIRO</span><span id="angTxt">52°</span></label>
+<input type="range" id="angulo" min="30" max="80" value="52">
+<label><span>💪 FUERZA</span><span id="fueTxt">72%</span></label>
+<input type="range" id="fuerza" min="30" max="100" value="72">
+<button class="btn btn-tirar" onclick="tirar()">¡TIRAR! 🏀</button>
+<button class="btn btn-reset" onclick="reiniciar()">↺ Reiniciar marcador</button>
+</div>
+
 <script>
-let enc=0, tiros=0;
-function tirar(){tiros++; let entra=Math.random()>0.4; if(entra){enc++; document.getElementById('msg').innerText='¡ENCANASTASTE! 🎉';} else {document.getElementById('msg').innerText='Fallaste, ¡otra vez!';} document.getElementById('marcador').innerText='Encestes: '+enc+' / Tiros: '+tiros;}
+const cv=document.getElementById('cancha'), ctx=cv.getContext('2d');
+let enc=0, tir=0, anim=null;
+let balon={x:70,y:360,r:18};
+let trayectoria=[];
+
+function dibujar(anguloDib){
+ ctx.clearRect(0,0,360,430);
+ // cancha
+ ctx.fillStyle='#e07a2f'; ctx.fillRect(0,0,360,430);
+ ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=3;
+ ctx.beginPath(); ctx.arc(180,430,110,Math.PI,0); ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(20,430); ctx.lineTo(20,300); ctx.lineTo(340,300); ctx.lineTo(340,430); ctx.stroke();
+ ctx.fillStyle='rgba(255,255,255,.15)'; ctx.fillRect(20,300,320,130);
+ // tablero
+ ctx.fillStyle='white'; ctx.fillRect(200,55,110,78);
+ ctx.strokeStyle='#0a1628'; ctx.lineWidth=3; ctx.strokeRect(200,55,110,78);
+ ctx.fillStyle='#ff6b00'; ctx.fillRect(235,98,40,28);
+ // aro
+ ctx.strokeStyle='#ff2d00'; ctx.lineWidth=5;
+ ctx.beginPath(); ctx.ellipse(255,132,28,7,0,0,Math.PI*2); ctx.stroke();
+ ctx.strokeStyle='white'; ctx.lineWidth=1.5;
+ for(let i=0;i<5;i++){ctx.beginPath(); ctx.moveTo(232+i*11,134); ctx.lineTo(235+i*10,155); ctx.stroke();}
+ // línea de tiro
+ ctx.strokeStyle='white'; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(70,360); ctx.lineTo(255,132); ctx.stroke(); ctx.setLineDash([]);
+ // arco ángulo
+ ctx.strokeStyle='yellow'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(70,360,45, -anguloDib*Math.PI/180, 0); ctx.stroke();
+ ctx.fillStyle='yellow'; ctx.font='bold 14px Arial'; ctx.fillText(anguloDib+'°', 95, 345);
+ // trayectoria punteada previa
+ ctx.fillStyle='rgba(255,255,255,.8)';
+ trayectoria.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();});
+ // balón
+ ctx.fillStyle='#ff7a00'; ctx.beginPath(); ctx.arc(balon.x,balon.y,balon.r,0,Math.PI*2); ctx.fill();
+ ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.stroke();
+ ctx.beginPath(); ctx.moveTo(balon.x-balon.r,balon.y); ctx.lineTo(balon.x+balon.r,balon.y); ctx.moveTo(balon.x,balon.y-balon.r); ctx.lineTo(balon.x,balon.y+balon.r); ctx.stroke();
+}
+function actualizar(){
+ document.getElementById('enc').innerText=enc;
+ document.getElementById('tir').innerText=tir;
+ document.getElementById('por').innerText= tir? Math.round(enc/tir*100)+'%' : '0%';
+}
+document.getElementById('angulo').oninput=e=>{document.getElementById('angTxt').innerText=e.target.value+'°'; dibujar(+e.target.value);};
+document.getElementById('fuerza').oninput=e=>{document.getElementById('fueTxt').innerText=e.target.value+'%';};
+
+function tirar(){
+ if(anim) return;
+ let ang=+document.getElementById('angulo').value;
+ let fue=+document.getElementById('fuerza').value;
+ let rad=ang*Math.PI/180;
+ let v= 9 + fue*0.09;
+ let vx=Math.cos(rad)*v, vy=-Math.sin(rad)*v;
+ let x=70, y=360, g=0.35;
+ trayectoria=[]; tir++;
+ document.getElementById('msg').innerText='¡Vuela el balón... 🏀';
+ document.getElementById('detalle').innerText=`Ángulo: ${ang}° • Fuerza: ${fue}% • Velocidad: ${v.toFixed(1)}`;
+ anim=setInterval(()=>{
+  x+=vx; y+=vy; vy+=g;
+  balon.x=x; balon.y=y;
+  if(trayectoria.length<40 && trayectoria.length%2==0) trayectoria.push({x,y});
+  dibujar(ang);
+  // ¿encestó?
+  if(Math.abs(x-255)<18 && Math.abs(y-132)<10 && vy>0){
+   clearInterval(anim); anim=null; enc++;
+   document.getElementById('msg').innerText='¡ENCAANASTASTE! 🎉🏀';
+   document.getElementById('detalle').innerText=`¡Perfecto! Ángulo ${ang}° • Fuerza ${fue}%`;
+   actualizar(); setTimeout(()=>{balon={x:70,y:360,r:18}; trayectoria=[]; dibujar(ang);},1200);
+   return;
+  }
+  if(y>400 || x>360 || x<0){
+   clearInterval(anim); anim=null;
+   document.getElementById('msg').innerText='Falló... ¡Intenta de nuevo! 😅';
+   document.getElementById('detalle').innerText=`Cayó en X:${Math.round(x)} • Te faltó / te pasaste. Ajusta fuerza.`;
+   actualizar(); setTimeout(()=>{balon={x:70,y:360,r:18}; trayectoria=[]; dibujar(ang);},900);
+  }
+ },28);
+}
+function reiniciar(){enc=0;tir=0;actualizar();document.getElementById('msg').innerText='Marcador en cero. ¡A tirar!';}
+dibujar(52); actualizar();
 </script>
-</body></html>
+</body>
+</html>
