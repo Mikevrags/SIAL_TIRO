@@ -7,17 +7,19 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
 body{background:#0a1628;color:white;padding:10px;padding-bottom:30px}
-.top{text-align:center}
-.top h1{font-size:28px}
-.sub{color:#ffb703;font-size:13px;margin:4px 0 10px}
+/* ===== BARRA SUPERIOR - AL DOBLE Y MÁS LARGA ===== */
+.top{text-align:center;background:#13233f;border-radius:0 0 18px 18px;padding:22px 10px 34px 10px;margin:-10px -10px 14px -10px;border-bottom:3px solid #ff6b00}
+.top h1{font-size:56px;line-height:1.05;letter-spacing:1px}
+.sub{color:#ffb703;font-size:26px;line-height:1.2;margin:10px 0 0 0;font-weight:800}
 .card{background:#13233f;border:1px solid #2a3f66;border-radius:16px;padding:12px;margin-bottom:10px}
-select{width:100%;padding:12px;border-radius:10px;border:0;background:white;color:#111;font-size:15px;font-weight:700}
-.marcador{display:flex;justify-content:space-between;text-align:center;margin-top:10px}
-.marcador div{flex:1;background:#0a1628;border-radius:12px;padding:10px 4px}
-.marcador b{font-size:24px;display:block}
-.marcador span{font-size:11px;color:#a8bcdd}
+select{width:100%;padding:14px;border-radius:10px;border:0;background:white;color:#111;font-size:17px;font-weight:700}
+/* ===== FRANJA DE PUNTOS - MÁS GRANDE ===== */
+.marcador{display:flex;justify-content:space-between;text-align:center;margin-top:14px;gap:8px}
+.marcador div{flex:1;background:#0a1628;border-radius:14px;padding:20px 4px;border:1px solid #2a3f66}
+.marcador b{font-size:48px;display:block;line-height:1}
+.marcador span{font-size:22px;color:#a8bcdd;font-weight:800;display:block;margin-top:6px;letter-spacing:.5px}
 #cancha{width:100%;height:480px;background:#111;display:block;border-radius:14px;border:3px solid white}
-label{font-size:13px;font-weight:700;display:flex;justify-content:space-between;margin:12px 0 4px}
+label{font-size:14px;font-weight:700;display:flex;justify-content:space-between;margin:12px 0 4px}
 input[type=range]{width:100%;height:28px;accent-color:#ff6b00}
 .btn{width:100%;padding:16px;border:0;border-radius:14px;font-size:22px;font-weight:900;cursor:pointer}
 .btn-tirar{background:#ff6b00;color:white;margin-top:12px}
@@ -69,52 +71,39 @@ let vuelo=null;
 
 function dibujar(){
  ctx.clearRect(0,0,360,480);
- // cielo / gradas
  ctx.fillStyle='#0a1628'; ctx.fillRect(0,0,360,180);
  ctx.fillStyle='#1a2f55'; ctx.fillRect(0,140,360,60);
  ctx.fillStyle='#ffb703'; ctx.font='bold 13px Arial'; ctx.fillText('SIAL • LIGA NIKE • JORNADA 7', 78, 165);
- // cancha en perspectiva - desde tus ojos
  ctx.fillStyle='#d97a26'; ctx.beginPath(); ctx.moveTo(0,480); ctx.lineTo(110,190); ctx.lineTo(250,190); ctx.lineTo(360,480); ctx.closePath(); ctx.fill();
  ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2.5;
  ctx.beginPath(); ctx.moveTo(0,480); ctx.lineTo(110,190); ctx.moveTo(360,480); ctx.lineTo(250,190); ctx.stroke();
- // líneas
  ctx.beginPath(); ctx.moveTo(95,330); ctx.lineTo(265,330); ctx.stroke();
  ctx.beginPath(); ctx.moveTo(135,260); ctx.lineTo(225,260); ctx.stroke();
- // TABLERO Y ARO ENFRENTE - GRANDE
  ctx.fillStyle='white'; ctx.fillRect(115,55,130,95);
  ctx.strokeStyle='#111'; ctx.lineWidth=3; ctx.strokeRect(115,55,130,95);
  ctx.fillStyle='#ff6b00'; ctx.fillRect(162,108,36,28);
  ctx.fillStyle='white'; ctx.font='bold 11px Arial'; ctx.fillText('SIAL',162,72);
- // aro
  ctx.strokeStyle='#ff2d00'; ctx.lineWidth=5;
  ctx.beginPath(); ctx.ellipse(180,152,32,8,0,0,Math.PI*2); ctx.stroke();
  ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1.2;
  for(let i=0;i<6;i++){ctx.beginPath(); ctx.moveTo(155+i*10,155); ctx.lineTo(158+i*9,178); ctx.stroke();}
- // punto de mira según ángulo
  let ang=+document.getElementById('angulo').value;
  ctx.strokeStyle='yellow'; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.moveTo(180,390); ctx.lineTo(180,160); ctx.stroke(); ctx.setLineDash([]);
  ctx.fillStyle='yellow'; ctx.font='bold 13px Arial'; ctx.fillText('ÁNGULO '+ang+'°', 125, 210);
-
- // TUS HOMBROS - abajo, primera persona
- ctx.fillStyle='#ff6b00'; // jersey
+ ctx.fillStyle='#ff6b00';
  ctx.beginPath(); ctx.ellipse(45,480,95,55,0,Math.PI,Math.PI*2); ctx.fill();
  ctx.beginPath(); ctx.ellipse(315,480,95,55,0,Math.PI,Math.PI*2); ctx.fill();
  ctx.fillStyle='#0a1628'; ctx.font='bold 11px Arial'; ctx.fillText('TÚ', 32, 465); ctx.fillText('TÚ', 302, 465);
-
- // TUS MANOS Y BALÓN
  if(balon.visible){
    let x=balon.x, y=balon.y, r=38*balon.escala;
-   // manos
    ctx.fillStyle='#f2c094';
    ctx.beginPath(); ctx.arc(x-28, y+22, 16, 0, Math.PI*2); ctx.fill();
    ctx.beginPath(); ctx.arc(x+28, y+22, 16, 0, Math.PI*2); ctx.fill();
-   // balón grande porque está en tus manos
    ctx.fillStyle='#ff7a00'; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
    ctx.strokeStyle='#111'; ctx.lineWidth=2.5; ctx.stroke();
    ctx.beginPath(); ctx.moveTo(x-r,y); ctx.lineTo(x+r,y); ctx.moveTo(x,y-r); ctx.lineTo(x,y+r); ctx.stroke();
    ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(x,y,r*0.6,0.4,2.2); ctx.stroke();
  }
- // efecto de trayectoria
  if(vuelo){
    ctx.fillStyle='rgba(255,255,255,.85)';
    vuelo.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();});
@@ -127,7 +116,6 @@ function actualizar(){
 }
 document.getElementById('angulo').oninput=e=>{document.getElementById('angTxt').innerText=e.target.value+'°'; dibujar();};
 document.getElementById('fuerza').oninput=e=>{document.getElementById('fueTxt').innerText=e.target.value+'%';};
-
 function tirar(){
  if(anim) return;
  let ang=+document.getElementById('angulo').value;
@@ -135,12 +123,9 @@ function tirar(){
  tir++;
  document.getElementById('msg').innerText='¡El balón va volando... 🏀';
  document.getElementById('detalle').innerText=`Desde tus hombros • Ángulo ${ang}° • Fuerza ${fue}%`;
- // animación primera persona: el balón sube y se achica hacia el aro
  let t=0; vuelo=[];
  let x0=180, y0=390, x1=180, y1=152;
- // calcula si encesta: zona ideal 48-60° y 65-80% fuerza
  let encesta = (ang>=48 && ang<=62 && fue>=62 && fue<=82);
- // si falla, desvía el destino
  if(!encesta){ x1 = 180 + (Math.random()<0.5?-1:1)*(35+Math.random()*35); y1 = 145 + Math.random()*25; }
  anim=setInterval(()=>{
   t+=0.045;
@@ -151,10 +136,9 @@ function tirar(){
    setTimeout(()=>{ balon={x:180,y:390,escala:1,visible:true}; vuelo=null; dibujar(); },1100);
    return;
   }
-  // parábola: sube y baja
   let x = x0 + (x1-x0)*t;
   let y = y0 + (y1-y0)*t - Math.sin(t*Math.PI)*110;
-  let escala = 1 - t*0.65; // se aleja, se ve más chico
+  let escala = 1 - t*0.65;
   balon={x, y, escala, visible:true};
   if(vuelo.length<25) vuelo.push({x,y});
   dibujar();
